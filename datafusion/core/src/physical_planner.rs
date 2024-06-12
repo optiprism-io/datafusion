@@ -2092,11 +2092,11 @@ impl DefaultPhysicalPlanner {
         F: FnMut(&dyn ExecutionPlan, &dyn PhysicalOptimizerRule),
     {
         let optimizers = session_state.physical_optimizers();
-        debug!(
+        dbg!(
             "Input physical plan:\n{}\n",
             displayable(plan.as_ref()).indent(false)
         );
-        trace!(
+        dbg!(
             "Detailed input physical plan:\n{}",
             displayable(plan.as_ref()).indent(true)
         );

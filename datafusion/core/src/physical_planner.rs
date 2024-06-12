@@ -2092,23 +2092,24 @@ impl DefaultPhysicalPlanner {
         F: FnMut(&dyn ExecutionPlan, &dyn PhysicalOptimizerRule),
     {
         let optimizers = session_state.physical_optimizers();
-        println!(
-            "Input physical plan:\n{}\n",
-            displayable(plan.as_ref()).indent(false)
-        );
-        println!(
-            "Detailed input physical plan:\n{}",
-            displayable(plan.as_ref()).indent(true)
-        );
 
         let mut new_plan = plan;
         for optimizer in optimizers {
+            println!("optimizer {}",optimizer.name());
+            println!(
+                "Detailed input physical plan:\n{}",
+                displayable(new_plan.as_ref()).indent(true)
+            );
             let before_schema = new_plan.schema();
             new_plan = optimizer
-                .optimize(new_plan, session_state.config_options())
+                .optimize(new_plan.clone(), session_state.config_options())
                 .map_err(|e| {
                     DataFusionError::Context(optimizer.name().to_string(), Box::new(e))
                 })?;
+            println!(
+                "Detailed input physical plan:\n{}",
+                displayable(new_plan.as_ref()).indent(true)
+            );
             if optimizer.schema_check() && new_plan.schema() != before_schema {
                 let e = DataFusionError::Internal(format!(
                     "PhysicalOptimizer rule '{}' failed, due to generate a different schema, original schema: {:?}, new schema: {:?}",

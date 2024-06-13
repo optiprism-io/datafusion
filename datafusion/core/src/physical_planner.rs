@@ -2095,22 +2095,22 @@ impl DefaultPhysicalPlanner {
 
         let mut new_plan = plan;
         for optimizer in optimizers {
-            println!("optimizer {}",optimizer.name());
+/*            println!("optimizer {}",optimizer.name());
             println!(
                 "Detailed input physical plan:\n{}",
                 displayable(new_plan.as_ref()).indent(true)
-            );
+            );*/
             let before_schema = new_plan.schema();
             new_plan = optimizer
                 .optimize(new_plan.clone(), session_state.config_options())
                 .map_err(|e| {
                     DataFusionError::Context(optimizer.name().to_string(), Box::new(e))
-                })?;
-            println!(
+                }) ?;
+/*            println!(
                 "Detailed input physical plan:\n{}",
                 displayable(new_plan.as_ref()).indent(true)
             );
-            if optimizer.schema_check() && new_plan.schema() != before_schema {
+*/            if optimizer.schema_check() && new_plan.schema() != before_schema {
                 let e = DataFusionError::Internal(format!(
                     "PhysicalOptimizer rule '{}' failed, due to generate a different schema, original schema: {:?}, new schema: {:?}",
                     optimizer.name(),

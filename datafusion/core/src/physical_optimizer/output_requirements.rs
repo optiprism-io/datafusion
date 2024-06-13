@@ -33,7 +33,7 @@ use datafusion_common::tree_node::{Transformed, TransformedResult, TreeNode};
 use datafusion_common::{Result, Statistics};
 use datafusion_physical_expr::{Distribution, LexRequirement, PhysicalSortRequirement};
 use datafusion_physical_plan::sorts::sort_preserving_merge::SortPreservingMergeExec;
-use datafusion_physical_plan::{ExecutionPlanProperties, PlanProperties};
+use datafusion_physical_plan::{displayable, ExecutionPlanProperties, PlanProperties};
 
 /// This rule either adds or removes [`OutputRequirements`]s to/from the physical
 /// plan according to its `mode` attribute, which is set by the constructors
@@ -195,11 +195,13 @@ impl PhysicalOptimizerRule for OutputRequirements {
         plan: Arc<dyn ExecutionPlan>,
         _config: &ConfigOptions,
     ) -> Result<Arc<dyn ExecutionPlan>> {
-        match self.mode {
+        println!("before: {}", displayable(plan.as_ref()).indent(true));
+        dbg!(plan.schema());
+        let r = match self.mode {
             RuleMode::Add => {
                 dbg!("require_top_ordering");
                 require_top_ordering(plan)
-            },
+            }
             RuleMode::Remove => plan
                 .transform_up(|plan| {
                     if let Some(sort_req) =
@@ -211,7 +213,10 @@ impl PhysicalOptimizerRule for OutputRequirements {
                     }
                 })
                 .data(),
-        }
+        }?;
+        println!("after: {}", displayable(r.as_ref()).indent(true));
+        dbg!(r.schema());
+        Ok(r)
     }
 
     fn name(&self) -> &str {

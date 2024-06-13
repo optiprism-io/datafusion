@@ -230,10 +230,11 @@ fn require_top_ordering(plan: Arc<dyn ExecutionPlan>) -> Result<Arc<dyn Executio
     let (new_plan, is_changed) = require_top_ordering_helper(plan)?;
     if is_changed {
         dbg!(is_changed);
-        dbg!(new_plan.schema());
         Ok(new_plan)
     } else {
         dbg!("?");
+        dbg!(new_plan.schema());
+
         // Add `OutputRequirementExec` to the top, with no specified ordering and distribution requirement.
         Ok(Arc::new(OutputRequirementExec::new(
             new_plan,

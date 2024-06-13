@@ -249,10 +249,13 @@ fn require_top_ordering_helper(
     plan: Arc<dyn ExecutionPlan>,
 ) -> Result<(Arc<dyn ExecutionPlan>, bool)> {
     let mut children = plan.children();
+    dbg!(&children);
     // Global ordering defines desired ordering in the final result.
     if children.len() != 1 {
+        dbg!("len 1");
         Ok((plan, false))
     } else if let Some(sort_exec) = plan.as_any().downcast_ref::<SortExec>() {
+        dbg!("sort exec");
         let req_ordering = sort_exec.properties().output_ordering().unwrap_or(&[]);
         let req_dist = sort_exec.required_input_distribution()[0].clone();
         let reqs = PhysicalSortRequirement::from_sort_exprs(req_ordering);
@@ -261,6 +264,7 @@ fn require_top_ordering_helper(
             true,
         ))
     } else if let Some(spm) = plan.as_any().downcast_ref::<SortPreservingMergeExec>() {
+        dbg!("sort preserving merge exec");
         let reqs = PhysicalSortRequirement::from_sort_exprs(spm.expr());
         Ok((
             Arc::new(OutputRequirementExec::new(
@@ -273,6 +277,8 @@ fn require_top_ordering_helper(
     } else if plan.maintains_input_order()[0]
         && plan.required_input_ordering()[0].is_none()
     {
+        dbg!("plan.maintains_input_order");
+
         // Keep searching for a `SortExec` as long as ordering is maintained,
         // and on-the-way operators do not themselves require an ordering.
         // When an operator requires an ordering, any `SortExec` below can not
@@ -281,6 +287,7 @@ fn require_top_ordering_helper(
             require_top_ordering_helper(children.swap_remove(0).clone())?;
         Ok((plan.with_new_children(vec![new_child])?, is_changed))
     } else {
+        dbg!("just plan");
         // Stop searching, there is no global ordering desired for the query.
         Ok((plan, false))
     }

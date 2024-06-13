@@ -232,17 +232,21 @@ impl PhysicalOptimizerRule for OutputRequirements {
 fn require_top_ordering(plan: Arc<dyn ExecutionPlan>) -> Result<Arc<dyn ExecutionPlan>> {
     let (new_plan, is_changed) = require_top_ordering_helper(plan)?;
     dbg!("require_top_ordering schema: {:?}", new_plan.schema());
-    if is_changed {
-        Ok(new_plan)
+    let r = if is_changed {
+        new_plan
     } else {
         // Add `OutputRequirementExec` to the top, with no specified ordering and distribution requirement.
-        Ok(Arc::new(OutputRequirementExec::new(
+        Arc::new(OutputRequirementExec::new(
             new_plan,
             // there is no ordering requirement
             None,
             Distribution::UnspecifiedDistribution,
-        )) as _)
-    }
+        )) as _
+    };
+
+    dbg!("require_top_ordering schema2: {:?}", r.schema());
+
+    Ok(r)
 }
 
 /// Helper function that adds an ancillary `OutputRequirementExec` to the given plan.

@@ -2101,7 +2101,7 @@ impl DefaultPhysicalPlanner {
                 displayable(new_plan.as_ref()).indent(true)
             );*/
             let before_schema = new_plan.schema();
-            dbg!("bbb: {:?}",before_schema);
+            dbg!("bbb: {:?}",&before_schema);
             new_plan = optimizer
                 .optimize(new_plan.clone(), session_state.config_options())
                 .map_err(|e| {

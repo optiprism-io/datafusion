@@ -226,9 +226,11 @@ impl PhysicalOptimizerRule for OutputRequirements {
 /// This functions adds ancillary `OutputRequirementExec` to the physical plan, so that
 /// global requirements are not lost during optimization.
 fn require_top_ordering(plan: Arc<dyn ExecutionPlan>) -> Result<Arc<dyn ExecutionPlan>> {
+    dbg!(plan.schema());
     let (new_plan, is_changed) = require_top_ordering_helper(plan)?;
     if is_changed {
         dbg!(is_changed);
+        dbg!(new_plan.schema());
         Ok(new_plan)
     } else {
         dbg!("?");
@@ -249,7 +251,6 @@ fn require_top_ordering_helper(
     plan: Arc<dyn ExecutionPlan>,
 ) -> Result<(Arc<dyn ExecutionPlan>, bool)> {
     let mut children = plan.children();
-    dbg!(&children);
     // Global ordering defines desired ordering in the final result.
     if children.len() != 1 {
         dbg!("len 1");

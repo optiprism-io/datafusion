@@ -231,7 +231,17 @@ impl PhysicalOptimizerRule for OutputRequirements {
 /// global requirements are not lost during optimization.
 fn require_top_ordering(plan: Arc<dyn ExecutionPlan>) -> Result<Arc<dyn ExecutionPlan>> {
     let (new_plan, is_changed) = require_top_ordering_helper(plan)?;
-    dbg!("require_top_ordering schema: {:?}", new_plan.schema());
+
+    let pp = Arc::new(OutputRequirementExec::new(
+        new_plan.clone(),
+        // there is no ordering requirement
+        None,
+        Distribution::UnspecifiedDistribution,
+    )) as Arc<dyn ExecutionPlan>;
+
+
+    dbg!("require_top_ordering schema", new_plan.clone().schema());
+    dbg!("require_top_ordering schema", pp.schema());
     let r = if is_changed {
         new_plan
     } else {

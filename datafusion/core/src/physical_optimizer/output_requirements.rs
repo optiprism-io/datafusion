@@ -196,7 +196,10 @@ impl PhysicalOptimizerRule for OutputRequirements {
         _config: &ConfigOptions,
     ) -> Result<Arc<dyn ExecutionPlan>> {
         match self.mode {
-            RuleMode::Add => require_top_ordering(plan),
+            RuleMode::Add => {
+                dbg!("require_top_ordering");
+                require_top_ordering(plan)
+            },
             RuleMode::Remove => plan
                 .transform_up(|plan| {
                     if let Some(sort_req) =
@@ -225,8 +228,10 @@ impl PhysicalOptimizerRule for OutputRequirements {
 fn require_top_ordering(plan: Arc<dyn ExecutionPlan>) -> Result<Arc<dyn ExecutionPlan>> {
     let (new_plan, is_changed) = require_top_ordering_helper(plan)?;
     if is_changed {
+        dbg!(is_changed);
         Ok(new_plan)
     } else {
+        dbg!("?");
         // Add `OutputRequirementExec` to the top, with no specified ordering and distribution requirement.
         Ok(Arc::new(OutputRequirementExec::new(
             new_plan,
